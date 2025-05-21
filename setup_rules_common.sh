@@ -76,11 +76,10 @@ print_success "  リンク作成: cline_rules_adapter.yaml"
 
 # Workflows用のシンボリックリンク作成
 print_info "Workflows用のシンボリックリンクを作成中..."
-cd "$PROJECT_ROOT/rules-common/workflows" && find . -type f -exec basename {} \; | while read file; do
-  ln -sf "../../../rules-common/workflows/$file" "$PROJECT_ROOT/.windsurf/workflows/$file"
+find "$PROJECT_ROOT/rules-common/workflows" -type f -exec basename {} \; | while read file; do
+  ln -sf "../../rules-common/workflows/$file" "$PROJECT_ROOT/.windsurf/workflows/$file"
   print_success "  リンク作成: workflows/$file"
 done
-cd "$PROJECT_ROOT" # 元のディレクトリに戻る
 
 print_success "セットアップが完了しました！"
 print_info "以下のコマンドを実行してコミットしてください:"

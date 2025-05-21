@@ -1,1 +1,1 @@
-../../../rules-common/workflows/start-development.md
+../../rules-common/workflows/start-development.md
