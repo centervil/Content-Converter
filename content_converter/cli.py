@@ -12,7 +12,7 @@ from pathlib import Path
 from .factory import ConverterFactory
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """
     コマンドライン引数をパースする
 
@@ -64,7 +64,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """コマンドラインからのエントリーポイント"""
     args = parse_args()
 

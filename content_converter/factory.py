@@ -11,6 +11,7 @@ from .llm.base import LLMProvider
 from .platforms.base import PlatformProvider
 from .platforms.note.provider import NoteProvider
 from .platforms.zenn.provider import ZennProvider
+from .converter import ContentConverter
 
 
 class PlatformFactory:
@@ -51,7 +52,7 @@ class ConverterFactory:
         platform_type: str,
         llm_provider: Optional[LLMProvider] = None,
         config: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> ContentConverter:
         """
         プラットフォームタイプに基づいてコンテンツコンバーターを作成する
 
@@ -63,8 +64,6 @@ class ConverterFactory:
         Returns:
             ContentConverter: コンテンツコンバーターのインスタンス
         """
-        from .converter import ContentConverter
-
         platform_provider = PlatformFactory.create(platform_type, config)
 
         return ContentConverter(

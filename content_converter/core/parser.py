@@ -14,7 +14,7 @@ import frontmatter
 class MarkdownParser:
     """マークダウンファイルの解析を行うクラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """初期化メソッド"""
         pass
 
