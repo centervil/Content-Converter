@@ -5,8 +5,8 @@ OASIS integration module
 OASISサービスとの連携機能を提供するモジュール
 """
 
-from typing import Dict, Any, Optional
 import importlib.util
+from typing import Any, Dict, Optional
 
 
 class OASISIntegration:

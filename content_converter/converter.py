@@ -5,10 +5,11 @@ Converter module
 コンテンツ変換の中核機能を提供するモジュール
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from .core.parser import MarkdownParser
-from .platforms.base import PlatformProvider
 from .llm.base import LLMProvider
+from .platforms.base import PlatformProvider
 
 
 class ContentConverter:
@@ -89,8 +90,9 @@ class ContentConverter:
         Raises:
             IOError: ファイル保存に失敗した場合
         """
-        import frontmatter
         from pathlib import Path
+
+        import frontmatter
 
         # フロントマターと本文を結合
         post = frontmatter.Post(

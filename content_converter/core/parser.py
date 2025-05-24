@@ -5,9 +5,10 @@ Parser module
 マークダウンファイルの読み込みと解析を行うモジュール
 """
 
-import frontmatter
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
+import frontmatter
 
 
 class MarkdownParser:

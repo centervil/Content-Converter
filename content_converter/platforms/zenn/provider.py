@@ -5,7 +5,8 @@ Zenn provider module
 Zennプラットフォーム向けのプロバイダークラスを提供するモジュール
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from ..base import PlatformProvider
 
 
@@ -31,36 +32,33 @@ class ZennProvider(PlatformProvider):
         Returns:
             Dict[str, Any]: 変換後のコンテンツ
         """
-        metadata = content.get('metadata', {}).copy()
-        content_text = content.get('content', '')
+        metadata = content.get("metadata", {}).copy()
+        content_text = content.get("content", "")
 
         # Zenn特有のメタデータフィールドの処理
-        if 'title' not in metadata:
-            metadata['title'] = 'Untitled Article'
+        if "title" not in metadata:
+            metadata["title"] = "Untitled Article"
 
-        if 'emoji' not in metadata:
-            metadata['emoji'] = '✨'
+        if "emoji" not in metadata:
+            metadata["emoji"] = "✨"
 
-        if 'type' not in metadata:
-            metadata['type'] = 'tech'  # tech または idea
+        if "type" not in metadata:
+            metadata["type"] = "tech"  # tech または idea
 
-        if 'topics' not in metadata:
-            metadata['topics'] = []
-        elif not isinstance(metadata['topics'], list):
-            metadata['topics'] = [metadata['topics']]
+        if "topics" not in metadata:
+            metadata["topics"] = []
+        elif not isinstance(metadata["topics"], list):
+            metadata["topics"] = [metadata["topics"]]
 
         # 最大4つのトピックまで
-        if len(metadata['topics']) > 4:
-            metadata['topics'] = metadata['topics'][:4]
+        if len(metadata["topics"]) > 4:
+            metadata["topics"] = metadata["topics"][:4]
 
         # 必須ではないがZenn推奨のメタデータ
-        if 'published' not in metadata:
-            metadata['published'] = True
+        if "published" not in metadata:
+            metadata["published"] = True
 
-        return {
-            'metadata': metadata,
-            'content': content_text
-        }
+        return {"metadata": metadata, "content": content_text}
 
     def validate(self, content: Dict[str, Any]) -> bool:
         """
@@ -72,20 +70,20 @@ class ZennProvider(PlatformProvider):
         Returns:
             bool: 検証結果（True: 有効、False: 無効）
         """
-        metadata = content.get('metadata', {})
+        metadata = content.get("metadata", {})
 
         # 必須フィールドの検証
-        required_fields = ['title', 'emoji', 'type', 'topics']
+        required_fields = ["title", "emoji", "type", "topics"]
         for field in required_fields:
             if field not in metadata:
                 return False
 
         # type は 'tech' または 'idea' のみ許可
-        if metadata['type'] not in ['tech', 'idea']:
+        if metadata["type"] not in ["tech", "idea"]:
             return False
 
         # topics は最大4つまで
-        if len(metadata.get('topics', [])) > 4:
+        if len(metadata.get("topics", [])) > 4:
             return False
 
         return True

@@ -5,19 +5,21 @@ Factory module
 各種コンポーネントのファクトリークラスを提供するモジュール
 """
 
-from typing import Dict, Any, Optional
-from .platforms.base import PlatformProvider
-from .platforms.zenn.provider import ZennProvider
-from .platforms.note.provider import NoteProvider
+from typing import Any, Dict, Optional
+
 from .llm.base import LLMProvider
+from .platforms.base import PlatformProvider
+from .platforms.note.provider import NoteProvider
+from .platforms.zenn.provider import ZennProvider
 
 
 class PlatformFactory:
     """プラットフォームプロバイダーのファクトリークラス"""
 
     @staticmethod
-    def create(platform_type: str,
-               config: Optional[Dict[str, Any]] = None) -> PlatformProvider:
+    def create(
+        platform_type: str, config: Optional[Dict[str, Any]] = None
+    ) -> PlatformProvider:
         """
         プラットフォームタイプに基づいてプロバイダーインスタンスを作成する
 
@@ -33,9 +35,9 @@ class PlatformFactory:
         """
         platform_type = platform_type.lower()
 
-        if platform_type == 'zenn':
+        if platform_type == "zenn":
             return ZennProvider(config)
-        elif platform_type == 'note':
+        elif platform_type == "note":
             return NoteProvider(config)
         else:
             raise ValueError(f"Unsupported platform type: {platform_type}")
@@ -46,9 +48,10 @@ class ConverterFactory:
 
     @staticmethod
     def create_converter(
-            platform_type: str,
-            llm_provider: Optional[LLMProvider] = None,
-            config: Optional[Dict[str, Any]] = None):
+        platform_type: str,
+        llm_provider: Optional[LLMProvider] = None,
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         プラットフォームタイプに基づいてコンテンツコンバーターを作成する
 
@@ -67,5 +70,5 @@ class ConverterFactory:
         return ContentConverter(
             platform_provider=platform_provider,
             llm_provider=llm_provider,
-            config=config
+            config=config,
         )

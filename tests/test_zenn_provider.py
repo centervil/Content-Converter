@@ -71,10 +71,7 @@ class TestZennProvider:
                 "title": "テスト記事",
                 "emoji": "🚀",
                 "type": "tech",
-                "topics": [
-                    "Python", "Markdown", "Zenn",
-                    "Content", "Converter"
-                ],
+                "topics": ["Python", "Markdown", "Zenn", "Content", "Converter"],
             },
             "content": "テストコンテンツ",
         }

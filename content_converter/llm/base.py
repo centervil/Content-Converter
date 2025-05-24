@@ -6,7 +6,7 @@ LLM連携の基底クラスを提供するモジュール
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 class LLMProvider(ABC):
