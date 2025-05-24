@@ -39,13 +39,12 @@ jobs:
         isort --check content_converter tests
     - name: 型チェック
       run: |
-        mypy content_converter
-    - name: テスト実行
+        mypy --config-file=mypy.ini content_converter
+    - name: テスト実行とカバレッジレポート
       run: |
-        pytest --cov=content_converter
-    - name: カバレッジレポート
-      run: |
-        pytest --cov=content_converter --cov-report=xml
+        pytest --cov=content_converter --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+      env:
+        PYTHONPATH: ${{ github.workspace }}
     - name: Codecovへカバレッジレポートをアップロード
       uses: codecov/codecov-action@v3
       with:
