@@ -5,7 +5,7 @@ note.com provider module
 note.comプラットフォーム向けのプロバイダークラスを提供するモジュール
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from ..base import PlatformProvider
 
 
@@ -20,7 +20,7 @@ class NoteProvider(PlatformProvider):
             config: note.com固有の設定値
         """
         self.config = config or {}
-        
+
     def convert(self, content: Dict[str, Any]) -> Dict[str, Any]:
         """
         コンテンツをnote.com向けの形式に変換する
@@ -33,33 +33,33 @@ class NoteProvider(PlatformProvider):
         """
         metadata = content.get('metadata', {}).copy()
         content_text = content.get('content', '')
-        
+
         # note.com特有のメタデータフィールドの処理
         if 'title' not in metadata:
             metadata['title'] = 'Untitled Note'
-            
+
         if 'hashtags' not in metadata:
             metadata['hashtags'] = []
         elif not isinstance(metadata['hashtags'], list):
             metadata['hashtags'] = [metadata['hashtags']]
-            
+
         # note.com用のフィールドに変換
         if 'topics' in metadata and 'hashtags' not in metadata:
             metadata['hashtags'] = metadata.pop('topics')
-            
+
         # アイキャッチ画像の処理
         if 'eyecatch' not in metadata and 'image' in metadata:
             metadata['eyecatch'] = metadata.pop('image')
-            
+
         # 公開状態の処理（デフォルトは下書き）
         if 'status' not in metadata:
             metadata['status'] = 'draft'  # draft or public
-            
+
         return {
             'metadata': metadata,
             'content': content_text
         }
-    
+
     def validate(self, content: Dict[str, Any]) -> bool:
         """
         コンテンツがnote.comの要件を満たしているかを検証する
@@ -71,15 +71,16 @@ class NoteProvider(PlatformProvider):
             bool: 検証結果（True: 有効、False: 無効）
         """
         metadata = content.get('metadata', {})
-        
+
         # 必須フィールドの検証
         required_fields = ['title']
         for field in required_fields:
             if field not in metadata:
                 return False
-                
+
         # status は 'draft' または 'public' のみ許可
-        if 'status' in metadata and metadata['status'] not in ['draft', 'public']:
+        valid_status = ['draft', 'public']
+        if 'status' in metadata and metadata['status'] not in valid_status:
             return False
-            
+
         return True

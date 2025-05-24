@@ -6,7 +6,7 @@ Platform Base module
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 class PlatformProvider(ABC):
@@ -28,7 +28,7 @@ class PlatformProvider(ABC):
             Dict[str, Any]: 変換後のコンテンツ
         """
         pass
-    
+
     @abstractmethod
     def validate(self, content: Dict[str, Any]) -> bool:
         """

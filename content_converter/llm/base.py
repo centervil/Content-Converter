@@ -13,7 +13,9 @@ class LLMProvider(ABC):
     """LLMプロバイダーの基底クラス"""
 
     @abstractmethod
-    def optimize_content(self, content: str, options: Optional[Dict[str, Any]] = None) -> str:
+    def optimize_content(
+        self, content: str, options: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         コンテンツをLLMを使用して最適化する
 
@@ -25,7 +27,7 @@ class LLMProvider(ABC):
             str: 最適化されたコンテンツ
         """
         pass
-    
+
     @abstractmethod
     def generate_summary(self, content: str, max_length: int = 100) -> str:
         """

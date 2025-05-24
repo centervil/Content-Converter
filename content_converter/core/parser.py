@@ -7,7 +7,7 @@ Parser module
 
 import frontmatter
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 class MarkdownParser:
@@ -40,12 +40,9 @@ class MarkdownParser:
             raise FileNotFoundError(f"File not found: {file_path}")
 
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 post = frontmatter.load(f)
-                
-            return {
-                'metadata': post.metadata,
-                'content': post.content
-            }
+
+            return {"metadata": post.metadata, "content": post.content}
         except Exception as e:
             raise ValueError(f"Failed to parse markdown file: {e}")
