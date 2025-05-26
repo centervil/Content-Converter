@@ -1,0 +1,9 @@
+# Bandit設定ファイル
+skips: ['B101']  # assert文の使用を許可
+exclude_dirs: ['tests', 'venv', '.git']
+targets: ['src']
+recursive: true
+verbose: true
+debug: false
+confidence: ['HIGH', 'MEDIUM']
+severity: ['HIGH', 'MEDIUM'] 

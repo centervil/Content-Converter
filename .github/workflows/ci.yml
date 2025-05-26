@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, 'release/*' ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, 'release/*' ]
+    branches: [ main ]
 
 # 共通で使用する環境変数
 env:
@@ -241,3 +241,32 @@ jobs:
             [[ "$test_status" != "success" ]] && echo "- テスト: $test_status"
             exit 1
           fi
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit pip-licenses
+    - name: Run Bandit security checks
+      run: bandit -r src/ -f json -o bandit-results.json
+    - name: Upload Bandit results
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-results
+        path: bandit-results.json
+    - name: Check dependencies licenses
+      run: |
+        pip-licenses --format=json --output-file=licenses.json
+        python -c 'import json; f = open("licenses.json"); licenses = json.load(f); restricted = [pkg for pkg in licenses if pkg["License"] in ["GPL", "AGPL", "LGPL"]]; [print(f"- {pkg[\"Name\"]}: {pkg[\"License\"]}") for pkg in restricted] if restricted else exit(0); exit(1) if restricted else exit(0)'
+    - name: Upload license results
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-results
+        path: licenses.json

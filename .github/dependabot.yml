@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "pip"
+      include: "scope"
+    reviewers:
+      - "centervil"
+    assignees:
+      - "centervil"
+    ignore:
+      - dependency-name: "pytest*"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "mypy*"
+        update-types: ["version-update:semver-minor"] 
