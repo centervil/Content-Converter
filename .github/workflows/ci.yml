@@ -66,7 +66,7 @@ jobs:
           isort --check --diff content_converter tests > ./reports/isort.txt || true
           cat ./reports/isort.txt
       - name: Lintレポート保存
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lint-reports
           path: ./reports/
@@ -107,7 +107,7 @@ jobs:
           mypy --config-file=mypy.ini content_converter > ./reports/mypy.txt || true
           cat ./reports/mypy.txt
       - name: 型チェックレポート保存
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: type-check-reports
           path: ./reports/
@@ -153,7 +153,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
       - name: テストレポート保存
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.python-version }}
           path: ./reports/
@@ -180,17 +180,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: Lintレポート取得
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: lint-reports
           path: ./reports/
       - name: 型チェックレポート取得
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: type-check-reports
           path: ./reports/
       - name: テストレポート取得
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-reports-${{ env.PYTHON_DEFAULT_VERSION }}
           path: ./reports/
