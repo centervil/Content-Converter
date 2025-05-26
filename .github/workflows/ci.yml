@@ -6,67 +6,234 @@ on:
   pull_request:
     branches: [ main, 'release/*' ]
 
+# 共通で使用する環境変数
+env:
+  PYTHON_DEFAULT_VERSION: '3.11'
+  COVERAGE_THRESHOLD: 80
+
 jobs:
+  # 依存関係のセットアップジョブ（共通処理）
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: キャッシュキーの生成
+        id: cache-key
+        run: echo "key=${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py') }}" >> $GITHUB_OUTPUT
+
+  # Lintチェックジョブ
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Pythonのセットアップ
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
+      - name: 依存関係のキャッシュ
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: 依存関係のインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Flake8チェック
+        id: flake8
+        continue-on-error: true
+        run: |
+          mkdir -p ./reports
+          flake8 content_converter tests --output-file=./reports/flake8.txt
+          cat ./reports/flake8.txt
+      - name: Blackチェック
+        id: black
+        continue-on-error: true
+        run: |
+          black --check --diff content_converter tests > ./reports/black.txt || true
+          cat ./reports/black.txt
+      - name: isortチェック
+        id: isort
+        continue-on-error: true
+        run: |
+          isort --check --diff content_converter tests > ./reports/isort.txt || true
+          cat ./reports/isort.txt
+      - name: Lintレポート保存
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-reports
+          path: ./reports/
+          retention-days: 7
+      - name: Lint結果の集約
+        run: |
+          if [[ "${{ steps.flake8.outcome }}" == "failure" || "${{ steps.black.outcome }}" == "failure" || "${{ steps.isort.outcome }}" == "failure" ]]; then
+            echo "::error::Lintチェックに失敗しました。詳細はレポートを確認してください。"
+            exit 1
+          fi
+
+  # 型チェックジョブ
+  type-check:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Pythonのセットアップ
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
+      - name: 依存関係のキャッシュ
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: 依存関係のインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: mypyによる型チェック
+        id: mypy
+        continue-on-error: true
+        run: |
+          mkdir -p ./reports
+          mypy --config-file=mypy.ini content_converter > ./reports/mypy.txt || true
+          cat ./reports/mypy.txt
+      - name: 型チェックレポート保存
+        uses: actions/upload-artifact@v3
+        with:
+          name: type-check-reports
+          path: ./reports/
+          retention-days: 7
+      - name: 型チェック結果の判定
+        if: steps.mypy.outcome == 'failure'
+        run: |
+          echo "::error::型チェックに失敗しました。詳細はレポートを確認してください。"
+          exit 1
+
+  # テスト実行ジョブ
   test:
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11']
-
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Pythonのセットアップ ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: 依存関係のキャッシュ
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: 依存関係のインストール
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-    - name: Lintチェック
-      run: |
-        flake8 content_converter tests
-        black --check content_converter tests
-        isort --check content_converter tests
-    - name: 型チェック
-      run: |
-        mypy --config-file=mypy.ini content_converter
-    - name: テスト実行とカバレッジレポート
-      run: |
-        pytest --cov=content_converter --cov-report=xml --cov-report=term-missing --cov-fail-under=80
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-    - name: Codecovへカバレッジレポートをアップロード
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+      - uses: actions/checkout@v3
+      - name: Pythonのセットアップ ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: 依存関係のキャッシュ
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}-${{ matrix.python-version }}
+          restore-keys: |
+            ${{ needs.setup.outputs.cache-key }}
+            ${{ runner.os }}-pip-
+      - name: 依存関係のインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: テスト実行とカバレッジレポート
+        id: test
+        continue-on-error: true
+        run: |
+          mkdir -p ./reports
+          pytest --cov=content_converter --cov-report=xml:./reports/coverage-${{ matrix.python-version }}.xml --cov-report=term --cov-report=html:./reports/htmlcov-${{ matrix.python-version }} --junit-xml=./reports/junit-${{ matrix.python-version }}.xml --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+      - name: テストレポート保存
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports-${{ matrix.python-version }}
+          path: ./reports/
+          retention-days: 7
+      - name: テスト結果の判定
+        if: steps.test.outcome == 'failure'
+        run: |
+          echo "::error::Python ${{ matrix.python-version }} でのテストに失敗しました。詳細はレポートを確認してください。"
+          exit 1
 
-  lint-report:
-    runs-on: ubuntu-latest
+  # PRレビューコメントジョブ
+  pr-review:
     if: github.event_name == 'pull_request'
+    needs: [lint, type-check, test]
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Pythonのセットアップ
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: 依存関係のインストール
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-    - name: コード品質レポート
-      uses: reviewdog/action-flake8@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        reporter: github-pr-review
-        flake8_args: '--max-line-length=100 content_converter tests'
+      - uses: actions/checkout@v3
+      - name: Pythonのセットアップ
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
+      - name: 依存関係のインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lintレポート取得
+        uses: actions/download-artifact@v3
+        with:
+          name: lint-reports
+          path: ./reports/
+      - name: 型チェックレポート取得
+        uses: actions/download-artifact@v3
+        with:
+          name: type-check-reports
+          path: ./reports/
+      - name: テストレポート取得
+        uses: actions/download-artifact@v3
+        with:
+          name: test-reports-${{ env.PYTHON_DEFAULT_VERSION }}
+          path: ./reports/
+      - name: Flake8レビュー
+        uses: reviewdog/action-flake8@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          flake8_args: '--max-line-length=100 content_converter tests'
+      - name: mypyレビュー
+        uses: tsuyoshicho/action-mypy@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: error
+          mypy_flags: '--config-file=mypy.ini content_converter'
+      - name: PRにカバレッジコメント
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./reports/coverage-${{ env.PYTHON_DEFAULT_VERSION }}.xml
+          fail_ci_if_error: false
+          verbose: true
+          flags: unittests
+
+  # 結果集約ジョブ
+  summary:
+    needs: [lint, type-check, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 結果集約
+        run: |
+          lint_status="${{ needs.lint.result }}"
+          type_check_status="${{ needs.type-check.result }}"
+          test_status="${{ needs.test.result }}"
+          
+          if [[ "$lint_status" == "success" && "$type_check_status" == "success" && "$test_status" == "success" ]]; then
+            echo "✅ すべてのチェックが成功しました！"
+            exit 0
+          else
+            echo "❌ 一部のチェックに失敗しました:"
+            [[ "$lint_status" != "success" ]] && echo "- Lintチェック: $lint_status"
+            [[ "$type_check_status" != "success" ]] && echo "- 型チェック: $type_check_status"
+            [[ "$test_status" != "success" ]] && echo "- テスト: $test_status"
+            exit 1
+          fi

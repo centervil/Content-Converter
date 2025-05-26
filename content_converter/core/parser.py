@@ -46,4 +46,20 @@ class MarkdownParser:
 
             return {"metadata": post.metadata, "content": post.content}
         except Exception as e:
-            raise ValueError(f"Failed to parse markdown file: {e}")
+            # フロントマターの解析に失敗した場合でもコンテンツは返す
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                # フロントマターの区切り文字を探す
+                if content.startswith("---"):
+                    # 2つ目の---を探す
+                    second_marker = content.find("---", 3)
+                    if second_marker != -1:
+                        # フロントマター部分を除いたコンテンツを抽出
+                        extracted_content = content[second_marker + 3:].strip()
+                        return {"metadata": {}, "content": extracted_content}
+                
+                # フロントマターが見つからない場合は全体をコンテンツとして扱う
+                return {"metadata": {}, "content": content}
+            except Exception as nested_e:
+                raise ValueError(f"Failed to parse markdown file: {e}, and fallback parsing also failed: {nested_e}")
