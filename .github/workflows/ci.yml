@@ -266,7 +266,17 @@ jobs:
     - name: Check dependencies licenses
       run: |
         pip-licenses --format=json --output-file=licenses.json
-        python -c 'import json; f = open("licenses.json"); licenses = json.load(f); restricted = [pkg for pkg in licenses if pkg["License"] in ["GPL", "AGPL", "LGPL"]]; [print(f"- {pkg[\"Name\"]}: {pkg[\"License\"]}") for pkg in restricted] if restricted else exit(0); exit(1) if restricted else exit(0)'
+        cat > check_licenses.py << 'EOF'
+        import json
+        with open("licenses.json") as f:
+            licenses = json.load(f)
+        restricted = [pkg for pkg in licenses if pkg["License"] in ["GPL", "AGPL", "LGPL"]]
+        if restricted:
+            for pkg in restricted:
+                print(f"- {pkg['Name']}: {pkg['License']}")
+            exit(1)
+        EOF
+        python check_licenses.py
     - name: Upload license results
       uses: actions/upload-artifact@v4
       with:
