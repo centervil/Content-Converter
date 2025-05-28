@@ -221,17 +221,18 @@ jobs:
 
   # 結果集約ジョブ
   summary:
-    needs: [lint, type-check, test]
+    needs: [lint, type-check, test, security]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: 結果集約
         run: |
           lint_status="${{ needs.lint.result }}"
-          type_check_status="${{ needs.type-check.result }}"
+          type_check_status="${{ needs['type-check'].result }}"
           test_status="${{ needs.test.result }}"
+          security_status="${{ needs.security.result }}"
           
-          if [[ "$lint_status" == "success" && "$type_check_status" == "success" && "$test_status" == "success" ]]; then
+          if [[ "$lint_status" == "success" && "$type_check_status" == "success" && "$test_status" == "success" && "$security_status" == "success" ]]; then
             echo "✅ すべてのチェックが成功しました！"
             exit 0
           else
@@ -239,6 +240,7 @@ jobs:
             [[ "$lint_status" != "success" ]] && echo "- Lintチェック: $lint_status"
             [[ "$type_check_status" != "success" ]] && echo "- 型チェック: $type_check_status"
             [[ "$test_status" != "success" ]] && echo "- テスト: $test_status"
+            [[ "$security_status" != "success" ]] && echo "- セキュリティチェック: $security_status"
             exit 1
           fi
 
