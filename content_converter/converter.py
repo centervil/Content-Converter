@@ -48,14 +48,28 @@ class ContentConverter:
             FileNotFoundError: ファイルが存在しない場合
             ValueError: 変換処理に失敗した場合
         """
+        import os
         # ファイルの解析
         parsed_content = self.parser.parse_file(file_path)
 
+        # プロンプトファイルの決定
+        prompt_file = self.config.get("prompt_file")
+        if prompt_file is None or not os.path.isfile(prompt_file):
+            prompt_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts", "default_prompt.txt")
+        
+        # 入力ファイル内容
+        input_text = parsed_content["content"]
+        template_text = ""
+        # テンプレートファイル指定が将来的にあればここで取得
+        # 現状は空文字列で展開
+        with open(prompt_file, "r", encoding="utf-8") as f:
+            prompt_template = f.read()
+        prompt_text = prompt_template.replace("{{input}}", input_text).replace("{{template}}", template_text)
+
         # LLMによる最適化（設定されている場合）
         if self.llm_provider and self.config.get("use_llm", True):
-            content_text = parsed_content["content"]
             optimized_content = self.llm_provider.optimize_content(
-                content_text, options=self.config.get("llm_options")
+                prompt_text, options=self.config.get("llm_options")
             )
             parsed_content["content"] = optimized_content
 
@@ -63,7 +77,7 @@ class ContentConverter:
             if self.config.get("generate_summary", False):
                 max_len = self.config.get("summary_length", 100)
                 summary = self.llm_provider.generate_summary(
-                    content_text, max_length=max_len
+                    input_text, max_length=max_len
                 )
                 parsed_content["metadata"]["summary"] = summary
 

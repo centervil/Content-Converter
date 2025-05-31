@@ -17,19 +17,21 @@ from .base import LLMProvider
 class GeminiProvider(LLMProvider):
     """Google Gemini APIを使用したLLMプロバイダー"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         """
         GeminiProviderの初期化
 
         Args:
-            api_key: Gemini APIキー。指定がない場合は環境変数GEMINI_API_KEYから取得
+            api_key: Gemini APIキー。指定がない場合は環境変数GOOGLE_API_KEYから取得
+            model: 使用するモデル名（デフォルト: gemini-2.0-flash-001）
         """
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
         if not self.api_key:
-            raise ValueError("Gemini APIキーが設定されていません。環境変数GEMINI_API_KEYを設定するか、api_key引数を指定してください。")
+            raise ValueError("Gemini APIキーが設定されていません。環境変数GOOGLE_API_KEYを設定するか、api_key引数を指定してください。")
 
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model_name = model or 'gemini-2.0-flash-001'
+        self.model = genai.GenerativeModel(self.model_name)
         self.safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,

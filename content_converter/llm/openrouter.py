@@ -16,7 +16,7 @@ from .base import LLMProvider
 class OpenRouterProvider(LLMProvider):
     """OpenRouter APIを使用したLLMプロバイダー"""
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "anthropic/claude-3-opus-20240229"):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         """
         OpenRouterProviderの初期化
 
@@ -28,7 +28,7 @@ class OpenRouterProvider(LLMProvider):
         if not self.api_key:
             raise ValueError("OpenRouter APIキーが設定されていません。環境変数OPENROUTER_API_KEYを設定するか、api_key引数を指定してください。")
 
-        self.model = model
+        self.model = model or "anthropic/claude-3-opus-20240229"
         self.api_base = "https://openrouter.ai/api/v1"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",

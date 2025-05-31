@@ -23,7 +23,11 @@ def parse_args() -> argparse.Namespace:
         description="Content-Converter: マークダウンファイルを各種プラットフォーム用に変換するツール"
     )
 
-    parser.add_argument("input_file", help="変換するマークダウンファイルのパス")
+    parser.add_argument(
+        "--input",
+        required=True,
+        help="変換するマークダウンファイルのパス（必須）"
+    )
 
     parser.add_argument(
         "-p",
@@ -51,6 +55,18 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--model",
+        type=str,
+        help="LLMのモデル名（例: gemini-2.0-flash-001）。指定がなければデフォルト値を使用"
+    )
+
+    parser.add_argument(
+        "--prompt-file",
+        type=str,
+        help="プロンプトファイルのパス。指定がなければデフォルトプロンプトを使用"
+    )
+
+    parser.add_argument(
         "--generate-summary", action="store_true", help="LLMを使用して要約を生成する"
     )
 
@@ -69,10 +85,10 @@ def main() -> None:
     args = parse_args()
 
     # 入力ファイルの確認
-    input_path = Path(args.input_file)
+    input_path = Path(args.input)
     if not input_path.exists():
         print(
-            f"エラー: 入力ファイル '{args.input_file}' が見つかりません。",
+            f"エラー: 入力ファイル '{args.input}' が見つかりません。",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -99,6 +115,8 @@ def main() -> None:
             "llm_provider": args.llm_provider,
             "generate_summary": args.generate_summary,
             "summary_length": args.summary_length,
+            "model": args.model,
+            "prompt_file": args.prompt_file,
         }
 
         # コンバーターの作成
@@ -108,9 +126,9 @@ def main() -> None:
         )
 
         # 変換処理の実行
-        input_file = args.input_file
+        input_file = args.input
         print(f"ファイル '{input_file}' を {args.platform} 形式に変換中...")
-        converted_content = converter.convert_file(args.input_file)
+        converted_content = converter.convert_file(args.input)
 
         # 変換結果の保存
         converter.save_converted_file(converted_content, output_path)
