@@ -57,11 +57,17 @@ class ContentConverter:
         if prompt_file is None or not os.path.isfile(prompt_file):
             prompt_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts", "default_prompt.txt")
         
+        # テンプレートファイルの読み込み
+        template_file = self.config.get("template_file")
+        template_text = ""
+        if template_file and os.path.isfile(template_file):
+            with open(template_file, "r", encoding="utf-8") as f:
+                template_text = f.read()
+        
         # 入力ファイル内容
         input_text = parsed_content["content"]
-        template_text = ""
-        # テンプレートファイル指定が将来的にあればここで取得
-        # 現状は空文字列で展開
+        
+        # プロンプトテンプレートの読み込みと変数展開
         with open(prompt_file, "r", encoding="utf-8") as f:
             prompt_template = f.read()
         prompt_text = prompt_template.replace("{{input}}", input_text).replace("{{template}}", template_text)

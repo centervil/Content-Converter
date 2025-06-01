@@ -48,6 +48,7 @@ class GeminiProvider(LLMProvider):
         Args:
             content: 最適化するコンテンツテキスト
             options: 最適化オプション
+                - model: 使用するモデル名
                 - temperature: 生成の多様性（0.0-1.0）
                 - max_tokens: 生成する最大トークン数
 
@@ -55,8 +56,14 @@ class GeminiProvider(LLMProvider):
             str: 最適化されたコンテンツ
         """
         options = options or {}
+        model_name = options.get("model") or self.model_name
         temperature = options.get("temperature", 0.7)
         max_tokens = options.get("max_tokens", 2048)
+
+        # モデルが変更された場合は新しいモデルをロード
+        if model_name != self.model_name:
+            self.model_name = model_name
+            self.model = genai.GenerativeModel(self.model_name)
 
         prompt = f"""
         以下のコンテンツを最適化してください。文章の流れを改善し、読みやすさを向上させてください。

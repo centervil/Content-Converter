@@ -45,6 +45,7 @@ class OpenRouterProvider(LLMProvider):
         Args:
             content: 最適化するコンテンツテキスト
             options: 最適化オプション
+                - model: 使用するモデル名
                 - temperature: 生成の多様性（0.0-1.0）
                 - max_tokens: 生成する最大トークン数
 
@@ -52,6 +53,7 @@ class OpenRouterProvider(LLMProvider):
             str: 最適化されたコンテンツ
         """
         options = options or {}
+        model = options.get("model") or self.model
         temperature = options.get("temperature", 0.7)
         max_tokens = options.get("max_tokens", 2048)
 
@@ -67,7 +69,7 @@ class OpenRouterProvider(LLMProvider):
             f"{self.api_base}/chat/completions",
             headers=self.headers,
             json={
-                "model": self.model,
+                "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": temperature,
                 "max_tokens": max_tokens,

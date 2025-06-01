@@ -67,6 +67,12 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--template",
+        type=str,
+        help="テンプレートファイルのパス。指定がなければデフォルトテンプレートを使用"
+    )
+
+    parser.add_argument(
         "--generate-summary", action="store_true", help="LLMを使用して要約を生成する"
     )
 
@@ -117,6 +123,10 @@ def main() -> None:
             "summary_length": args.summary_length,
             "model": args.model,
             "prompt_file": args.prompt_file,
+            "template_file": args.template,
+            "llm_options": {
+                "model": args.model
+            } if args.model else {}
         }
 
         # コンバーターの作成
