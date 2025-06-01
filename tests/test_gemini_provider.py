@@ -9,6 +9,7 @@ import os
 import pytest
 from unittest.mock import Mock, patch
 
+import google.generativeai as genai
 from content_converter.llm import GeminiProvider
 
 
@@ -25,15 +26,22 @@ class TestGeminiProvider:
     @pytest.fixture
     def provider(self, mock_genai):
         """GeminiProviderのインスタンス"""
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test_key"}):
+        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test_key"}):
             return GeminiProvider()
 
     def test_init_with_env_var(self, mock_genai):
         """環境変数からAPIキーを取得するテスト"""
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test_key"}):
+        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test_key"}):
             provider = GeminiProvider()
             assert provider.api_key == "test_key"
             mock_genai.configure.assert_called_once_with(api_key="test_key")
+
+    def test_init_with_model(self, mock_genai):
+        """モデル指定のテスト"""
+        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test_key"}):
+            provider = GeminiProvider(model="gemini-2.0-flash-001")
+            assert provider.model_name == "gemini-2.0-flash-001"
+            mock_genai.GenerativeModel.assert_called_once_with("gemini-2.0-flash-001")
 
     def test_init_with_api_key(self, mock_genai):
         """APIキーを直接指定するテスト"""
@@ -56,6 +64,14 @@ class TestGeminiProvider:
         result = provider.optimize_content("test content")
         assert result == "optimized content"
         provider.model.generate_content.assert_called_once()
+        args, kwargs = provider.model.generate_content.call_args
+        generation_config = kwargs["generation_config"]
+        generation_config.configure_mock(
+            temperature=0.7,
+            max_output_tokens=2048,
+            top_p=None,
+            top_k=None
+        )
 
     def test_optimize_content_with_options(self, provider, mock_genai):
         """optimize_contentのオプション指定テスト"""
@@ -67,6 +83,14 @@ class TestGeminiProvider:
         result = provider.optimize_content("test content", options)
         assert result == "optimized content"
         provider.model.generate_content.assert_called_once()
+        args, kwargs = provider.model.generate_content.call_args
+        generation_config = kwargs["generation_config"]
+        generation_config.configure_mock(
+            temperature=0.5,
+            max_output_tokens=1024,
+            top_p=None,
+            top_k=None
+        )
 
     def test_generate_summary(self, provider, mock_genai):
         """generate_summaryのテスト"""
