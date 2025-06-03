@@ -145,8 +145,7 @@ def main() -> int:
 
             # 結果を出力
             if args.output:
-                with open(args.output, "w", encoding="utf-8") as f:
-                    f.write(result)
+                converter.save_converted_file(result, args.output)
                 print(f"変換が完了しました: {args.output}")
             else:
                 print(result)
