@@ -151,3 +151,51 @@ class TestContentConverter:
         
         # Check if the optimized content is in the result
         assert result["content"] == "optimized with custom model"
+        
+    def test_save_converted_file_success(self, mock_platform_provider, tmp_path):
+        """Test successful save of converted content to a file."""
+        # Arrange
+        converter = ContentConverter(platform_provider=mock_platform_provider)
+        output_file = tmp_path / "output.md"
+        content = {
+            "content": "Test content",
+            "metadata": {"title": "Test Title", "tags": ["test", "example"]}
+        }
+        
+        # Act
+        converter.save_converted_file(content, str(output_file))
+        
+        # Assert
+        assert output_file.exists()
+        with open(output_file, 'r', encoding='utf-8') as f:
+            saved_content = f.read()
+        assert "Test content" in saved_content
+        assert "title: Test Title" in saved_content
+        assert "- test" in saved_content
+        assert "- example" in saved_content
+
+    def test_save_converted_file_invalid_path(self, mock_platform_provider):
+        """Test save with invalid output path raises IOError."""
+        # Arrange
+        converter = ContentConverter(platform_provider=mock_platform_provider)
+        content = {
+            "content": "Test content",
+            "metadata": {"title": "Test"}
+        }
+        
+        # Act & Assert
+        with pytest.raises(IOError):
+            converter.save_converted_file(content, "/invalid/path/output.md")
+    
+    def test_save_converted_file_invalid_content(self, mock_platform_provider, tmp_path):
+        """Test save with invalid content structure raises ValueError."""
+        # Arrange
+        converter = ContentConverter(platform_provider=mock_platform_provider)
+        output_file = tmp_path / "output.md"
+        
+        # Missing 'content' key
+        invalid_content = {"metadata": {"title": "Test"}}
+        
+        # Act & Assert
+        with pytest.raises(ValueError, match="コンテンツに'content'キーが含まれていません"):
+            converter.save_converted_file(invalid_content, str(output_file))

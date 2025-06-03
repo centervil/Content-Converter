@@ -9,39 +9,35 @@ from typing import Any, Dict, Optional
 
 from .converter import ContentConverter
 from .llm.base import LLMProvider
-from .platforms.base import PlatformProvider
-from .platforms.note.provider import NoteProvider
-from .platforms.zenn.provider import ZennProvider
+from .llm.gemini import GeminiProvider
+from .llm.openrouter import OpenRouterProvider
 
 
-class PlatformFactory:
-    """プラットフォームプロバイダーのファクトリークラス"""
+class LLMProviderFactory:
+    """LLMプロバイダーのファクトリークラス"""
 
     @staticmethod
-    def create(
-        platform_type: str, config: Optional[Dict[str, Any]] = None
-    ) -> PlatformProvider:
+    def create(provider_type: str, api_key: Optional[str] = None, model: Optional[str] = None) -> LLMProvider:
         """
-        プラットフォームタイプに基づいてプロバイダーインスタンスを作成する
+        LLMプロバイダーを作成する
 
         Args:
-            platform_type: プラットフォームタイプ ('zenn', 'note', etc.)
-            config: プラットフォーム固有の設定
+            provider_type: プロバイダータイプ ('gemini', 'openrouter')
+            api_key: APIキー
+            model: モデル名
 
         Returns:
-            PlatformProvider: プラットフォームプロバイダーのインスタンス
+            LLMProvider: LLMプロバイダーのインスタンス
 
         Raises:
-            ValueError: サポートされていないプラットフォームタイプの場合
+            ValueError: サポートされていないプロバイダータイプの場合
         """
-        platform_type = platform_type.lower()
-
-        if platform_type == "zenn":
-            return ZennProvider(config)
-        elif platform_type == "note":
-            return NoteProvider(config)
+        if provider_type == "gemini":
+            return GeminiProvider(api_key=api_key, model=model)
+        elif provider_type == "openrouter":
+            return OpenRouterProvider(api_key=api_key, model=model)
         else:
-            raise ValueError(f"Unsupported platform type: {platform_type}")
+            raise ValueError(f"Unsupported LLM provider type: {provider_type}")
 
 
 class ConverterFactory:
@@ -49,25 +45,16 @@ class ConverterFactory:
 
     @staticmethod
     def create_converter(
-        platform_type: str,
-        llm_provider: Optional[LLMProvider] = None,
-        config: Optional[Dict[str, Any]] = None,
+        llm_provider: Optional[LLMProvider] = None, config: Optional[Dict[str, Any]] = None
     ) -> ContentConverter:
         """
-        プラットフォームタイプに基づいてコンテンツコンバーターを作成する
+        コンテンツコンバーターを作成する
 
         Args:
-            platform_type: プラットフォームタイプ
             llm_provider: LLMプロバイダー（省略可能）
             config: コンバーター設定
 
         Returns:
             ContentConverter: コンテンツコンバーターのインスタンス
         """
-        platform_provider = PlatformFactory.create(platform_type, config)
-
-        return ContentConverter(
-            platform_provider=platform_provider,
-            llm_provider=llm_provider,
-            config=config,
-        )
+        return ContentConverter(llm_provider=llm_provider, config=config or {})

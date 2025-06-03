@@ -1,3 +1,4 @@
+# content_converter/converter.py
 """
 Converter module
 --------------
@@ -7,9 +8,7 @@ Converter module
 
 from typing import Any, Dict, Optional
 
-from .core.parser import MarkdownParser
 from .llm.base import LLMProvider
-from .platforms.base import PlatformProvider
 
 
 class ContentConverter:
@@ -17,112 +16,90 @@ class ContentConverter:
 
     def __init__(
         self,
-        platform_provider: PlatformProvider,
-        llm_provider: Optional[LLMProvider] = None,
+        llm_provider: LLMProvider,
         config: Optional[Dict[str, Any]] = None,
     ):
         """
         初期化メソッド
 
         Args:
-            platform_provider: プラットフォームプロバイダー
-            llm_provider: LLMプロバイダー（省略可能）
+            llm_provider: LLMプロバイダー
             config: コンバーター設定
         """
-        self.platform_provider = platform_provider
         self.llm_provider = llm_provider
         self.config = config or {}
-        self.parser = MarkdownParser()
 
-    def convert_file(self, file_path: str) -> Dict[str, Any]:
+    def convert(
+        self,
+        input_text: str,
+        template: str,
+        prompt: Optional[str] = None,
+    ) -> str:
         """
-        マークダウンファイルを指定されたプラットフォーム用に変換する
+        コンテンツを変換する
 
         Args:
-            file_path: 変換するマークダウンファイルのパス
+            input_text: 入力テキスト
+            template: テンプレートテキスト
+            prompt: カスタムプロンプト（省略可）
 
         Returns:
-            Dict[str, Any]: 変換後のコンテンツ
-
-        Raises:
-            FileNotFoundError: ファイルが存在しない場合
-            ValueError: 変換処理に失敗した場合
+            str: 変換されたテキスト
         """
-        import os
-        # ファイルの解析
-        parsed_content = self.parser.parse_file(file_path)
+        # デフォルトプロンプト
+        default_prompt = """
+        以下の入力テキストを指定されたテンプレートの形式に変換してください。
 
-        # プロンプトファイルの決定
-        prompt_file = self.config.get("prompt_file")
-        if prompt_file is None or not os.path.isfile(prompt_file):
-            prompt_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts", "default_prompt.txt")
-        
-        # テンプレートファイルの読み込み
-        template_file = self.config.get("template_file")
-        template_text = ""
-        if template_file and os.path.isfile(template_file):
-            with open(template_file, "r", encoding="utf-8") as f:
-                template_text = f.read()
-        
-        # 入力ファイル内容
-        input_text = parsed_content["content"]
-        
-        # プロンプトテンプレートの読み込みと変数展開
-        with open(prompt_file, "r", encoding="utf-8") as f:
-            prompt_template = f.read()
-        prompt_text = prompt_template.replace("{{input}}", input_text).replace("{{template}}", template_text)
+        # 入力テキスト
+        {{input}}
 
-        # LLMによる最適化（設定されている場合）
-        if self.llm_provider and self.config.get("use_llm", True):
-            optimized_content = self.llm_provider.optimize_content(
-                prompt_text, options=self.config.get("llm_options")
-            )
-            parsed_content["content"] = optimized_content
+        # 使用するテンプレート
+        {{template}}
 
-            # メタデータの拡張（LLMから取得した要約など）
-            if self.config.get("generate_summary", False):
-                max_len = self.config.get("summary_length", 100)
-                summary = self.llm_provider.generate_summary(
-                    input_text, max_length=max_len
-                )
-                parsed_content["metadata"]["summary"] = summary
-
-        # プラットフォーム固有の変換処理
-        converted_content = self.platform_provider.convert(parsed_content)
-
-        # 変換結果の検証
-        if not self.platform_provider.validate(converted_content):
-            msg = "コンテンツがプラットフォームの要件を満たしていません"
-            raise ValueError(msg)
-
-        return converted_content
-
-    def save_converted_file(
-        self, converted_content: Dict[str, Any], output_path: str
-    ) -> None:
+        # 出力要件
+        - テンプレート内のプレースホルダーを適切に置き換えてください
+        - フォーマットを維持してください
+        - 構造を保持してください
         """
-        変換後のコンテンツをファイルに保存する
 
-        Args:
-            converted_content: 変換後のコンテンツ
-            output_path: 出力先ファイルパス
-
-        Raises:
-            IOError: ファイル保存に失敗した場合
-        """
-        from pathlib import Path
-
-        import frontmatter
-
-        # フロントマターと本文を結合
-        post = frontmatter.Post(
-            converted_content["content"], **converted_content["metadata"]
+        # プロンプトの生成
+        final_prompt = (prompt or default_prompt).replace(
+            "{{input}}", input_text
+        ).replace(
+            "{{template}}", template
         )
 
-        # ファイルに保存
-        try:
-            output_file = Path(output_path)
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(frontmatter.dumps(post))
-        except Exception as e:
-            raise IOError(f"ファイル保存に失敗しました: {e}")
+        # LLMを使用して変換
+        return self.llm_provider.optimize_content(final_prompt)
+
+    def convert_file(
+        self,
+        input_path: str,
+        template_path: str,
+        prompt_path: Optional[str] = None,
+    ) -> str:
+        """
+        ファイルからコンテンツを読み込んで変換する
+
+        Args:
+            input_path: 入力ファイルのパス
+            template_path: テンプレートファイルのパス
+            prompt_path: プロンプトファイルのパス（省略可）
+
+        Returns:
+            str: 変換されたテキスト
+        """
+        # ファイルの読み込み
+        with open(input_path, "r", encoding="utf-8") as f:
+            input_text = f.read()
+
+        with open(template_path, "r", encoding="utf-8") as f:
+            template = f.read()
+
+        prompt = None
+        if prompt_path:
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                prompt = f.read()
+
+        # 変換を実行
+        return self.convert(input_text, template, prompt)
