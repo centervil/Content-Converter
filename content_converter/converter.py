@@ -14,6 +14,16 @@ from .llm.base import LLMProvider
 class ContentConverter:
     """コンテンツ変換を行うメインクラス"""
 
+    def save_converted_file(self, text: str, output_path: str) -> None:
+        """
+        変換結果を指定ファイルに保存する
+        Args:
+            text: 保存するテキスト
+            output_path: 出力ファイルパス
+        """
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(text)
+
     def __init__(
         self,
         llm_provider: LLMProvider,
