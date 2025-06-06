@@ -349,9 +349,9 @@ class TestGetApiKey:
         api_key = get_api_key("gemini", "just_a_key")
         assert api_key == "just_a_key"
 
-    @patch.dict(os.environ, {"GEMINI_API_KEY": "env_gemini_key"}, clear=True)
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "env_gemini_key"}, clear=True)
     def test_get_api_key_from_env_gemini(self):
-        """環境変数 (GEMINI_API_KEY) からAPIキーを取得するテスト"""
+        """環境変数 (GOOGLE_API_KEY) からAPIキーを取得するテスト"""
         api_key = get_api_key("gemini")
         assert api_key == "env_gemini_key"
 
@@ -361,7 +361,7 @@ class TestGetApiKey:
         api_key = get_api_key("openrouter")
         assert api_key == "env_openrouter_key"
 
-    @patch.dict(os.environ, {"GEMINI_API_KEY": "env_gemini_key"}, clear=True)
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "env_gemini_key"}, clear=True)
     def test_get_api_key_arg_takes_precedence(self):
         """コマンドライン引数が環境変数より優先されることを確認するテスト"""
         api_key = get_api_key("gemini", "gemini:arg_gemini_key_override")
@@ -370,20 +370,18 @@ class TestGetApiKey:
         api_key_no_provider_in_arg = get_api_key("gemini", "arg_gemini_key_simple_override")
         assert api_key_no_provider_in_arg == "arg_gemini_key_simple_override"
 
-
     @patch.dict(os.environ, {}, clear=True) # 環境変数をクリア
     def test_get_api_key_not_found(self):
         """APIキーが見つからない場合にValueErrorが発生することを確認するテスト"""
         with pytest.raises(ValueError) as excinfo:
             get_api_key("gemini")
         assert "gemini apiキーが設定されていません。" in str(excinfo.value).lower()
-        assert "環境変数 GEMINI_API_KEY を設定するか、--api-key 引数で指定してください。" in str(excinfo.value)
+        assert "環境変数 GOOGLE_API_KEY を設定するか、--api-key 引数で指定してください。" in str(excinfo.value)
 
         with pytest.raises(ValueError) as excinfo_custom_provider:
             get_api_key("custom_provider")
         assert "custom_provider apiキーが設定されていません。" in str(excinfo_custom_provider.value).lower()
         assert "環境変数 CUSTOM_PROVIDER_API_KEY を設定するか、--api-key 引数で指定してください。" in str(excinfo_custom_provider.value)
-
 
     def test_get_api_key_provider_case_insensitive_arg(self):
         """コマンドライン引数のプロバイダー名が大文字・小文字を区別しないことを確認するテスト"""
@@ -393,7 +391,7 @@ class TestGetApiKey:
         api_key_upper = get_api_key("GEMINI", "GeMiNi:another_case_key")
         assert api_key_upper == "another_case_key"
 
-    @patch.dict(os.environ, {"GEMINI_API_KEY": "env_gemini_key_case"}, clear=True)
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "env_gemini_key_case"}, clear=True)
     def test_get_api_key_provider_case_insensitive_env(self):
         """環境変数のプロバイダー名が大文字・小文字を区別しないことを確認するテスト"""
         api_key_lower = get_api_key("gemini")
@@ -404,7 +402,7 @@ class TestGetApiKey:
 
     def test_get_api_key_arg_provider_mismatch(self):
         """コマンドライン引数のプロバイダ名と実際のプロバイダ名が異なる場合、引数のキーは無視され環境変数を参照するテスト"""
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "env_gemini_for_mismatch"}, clear=True):
+        with patch.dict(os.environ, {"GOOGLE_API_KEY": "env_gemini_for_mismatch"}, clear=True):
             api_key = get_api_key("gemini", "other_provider:arg_key_wont_be_used")
             assert api_key == "env_gemini_for_mismatch"
 

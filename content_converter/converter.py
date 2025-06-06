@@ -56,7 +56,17 @@ class ContentConverter:
         Returns:
             str: 変換されたテキスト
         """
-        # デフォルトプロンプト
+        use_llm = self.config.get("use_llm", True)
+        if not use_llm:
+            # テンプレートの{{content}}または{{input}}にinput_textを埋め込むだけ
+            # どちらもなければinput_textをそのまま返す
+            if "{{content}}" in template:
+                return template.replace("{{content}}", input_text)
+            elif "{{input}}" in template:
+                return template.replace("{{input}}", input_text)
+            else:
+                return input_text
+        # LLM使用時
         default_prompt = """
         以下の入力テキストを指定されたテンプレートの形式に変換してください。
 
@@ -71,15 +81,11 @@ class ContentConverter:
         - フォーマットを維持してください
         - 構造を保持してください
         """
-
-        # プロンプトの生成
         final_prompt = (prompt or default_prompt).replace(
             "{{input}}", input_text
         ).replace(
             "{{template}}", template
         )
-
-        # LLMを使用して変換
         return self.llm_provider.optimize_content(final_prompt)
 
     def convert_file(
