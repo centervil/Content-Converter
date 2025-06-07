@@ -8,6 +8,13 @@
 
 ## インストール方法
 
+### 仮想環境の利用を推奨
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
 ### 1. PyPI からのインストール（推奨）
 
 ```bash
@@ -16,10 +23,16 @@ pip install content-converter
 
 ### 2. ソースからのインストール
 
+（仮想環境を有効化した状態で実行してください）
+
 ```bash
 # リポジトリのクローン
 git clone https://github.com/centervil/Content-Converter.git
 cd Content-Converter
+
+# 仮想環境の作成・有効化（未実施の場合）
+python3 -m venv venv
+source venv/bin/activate
 
 # 依存関係のインストール
 pip install -e ".[dev]"
