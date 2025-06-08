@@ -1,0 +1,100 @@
+# Codecov設定ファイル
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+        if_not_found: success
+        if_ci_failed: error
+
+# カバレッジ対象から除外するファイル/ディレクトリ
+exclude:
+  - "tests/*"
+  - "**/__pycache__/*"
+  - "**/test_*.py"
+  - "**/conftest.py"
+  - "**/setup.py"
+  - "**/__init__.py"
+  - "**/version.py"
+
+# ブランチ設定
+branch:
+  # デフォルトのブランチ（main/master）
+  default: main
+  # カバレッジの差分を計算する際のベースブランチ
+  compare: main
+
+# コメント設定
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+# パス設定
+paths:
+  - "content_converter/"
+
+# プラグイン設定
+plugins:
+  - coveragepy
+
+# その他の設定
+ignore:
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.json"
+  - "**/*.yaml"
+  - "**/*.yml"
+  - "**/*.ini"
+  - "**/*.cfg"
+  - "**/*.toml"
+  - "**/*.sh"
+  - "**/.*"
+  - "**/docs/*"
+  - "**/examples/*"
+  - "**/scripts/*"
+  - "**/tests/*"
+  - "**/venv/*"
+  - "**/.venv/*"
+  - "**/build/*"
+  - "**/dist/*"
+  - "**/*.egg-info/*"
+
+# カバレッジの閾値設定
+codecov:
+  require_ci_to_pass: false
+  max_report_age: off
+  notify:
+    after_n_builds: 1
+  status:
+    project: false
+    patch: true
+    changes: false
+
+# カバレッジの集計方法
+coverage:
+  ignore_ssl: true
+  notify:
+    after_n_builds: 1
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 1%

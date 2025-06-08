@@ -161,6 +161,9 @@ jobs:
           name: test-reports-${{ matrix.python-version }}
           path: ./reports/
           retention-days: 7
+
+      # カバレッジXMLを集約（最終Pythonバージョンでのみ実行）
+      # カバレッジXMLの統合はpr-reviewジョブで行う
       - name: テスト結果の判定
         if: steps.test.outcome == 'failure'
         run: |
@@ -211,13 +214,38 @@ jobs:
           reporter: github-pr-review
           level: error
           mypy_flags: '--config-file=mypy.ini content_converter'
+      - name: カバレッジXMLを結合
+        id: combine-coverage
+        run: |
+          # カバレッジXMLを結合
+          python -m pip install coverage
+          python -m coverage combine ./reports/coverage-*.xml
+          python -m coverage xml -o ./reports/coverage.xml
+          
+          # カバレッジ率を取得
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; \
+            tree = ET.parse('./reports/coverage.xml'); \
+            root = tree.getroot(); \
+            print(root.attrib['line-rate'])")
+          
+          # 閾値と比較
+          if (( $(echo "$COVERAGE * 100 < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+            echo "::warning::カバレッジが閾値(${{ env.COVERAGE_THRESHOLD }}%)を下回っています: $(echo "$COVERAGE * 100" | bc -l)%"
+            # 開発中は警告のみで失敗させない
+            # exit 1
+          fi
+          
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+        
       - name: PRにカバレッジコメント
         uses: codecov/codecov-action@v3
         with:
-          files: ./reports/coverage-${{ env.PYTHON_DEFAULT_VERSION }}.xml
+          files: ./reports/coverage.xml
           fail_ci_if_error: false
           verbose: true
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: codecov-umbrella
 
   # 結果集約ジョブ
   summary:
