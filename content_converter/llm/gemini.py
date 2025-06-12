@@ -27,7 +27,7 @@ class GeminiProvider(LLMProvider):
         """
         self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
         if not self.api_key:
-            raise ValueError("Gemini APIキーが設定されていません。環境変数GOOGLE_API_KEYを設定するか、api_key引数を指定してください。")
+            raise ValueError("Gemini APIキーが設定されていません。環境変数 GOOGLE_API_KEY を設定するか、--api-key 引数で指定してください。詳細は [Gemini API ドキュメント](https://ai.google.dev/docs/api_key) を参照してください。")
 
         genai.configure(api_key=self.api_key)
         self.model_name = model or 'gemini-2.0-flash-001'
