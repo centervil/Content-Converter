@@ -26,6 +26,7 @@ setup(
         "python-dotenv>=1.0.0",
         "markdown>=3.4.0",
         "pydantic>=2.5.2",
+        "google-generativeai", # 追加
     ],
     extras_require={
         "oasis": ["oasis-article>=0.8.0"],
