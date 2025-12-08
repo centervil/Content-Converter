@@ -45,7 +45,9 @@ class ConverterFactory:
 
     @staticmethod
     def create_converter(
-        llm_provider: Optional[LLMProvider] = None, config: Optional[Dict[str, Any]] = None
+        llm_provider: Optional[LLMProvider] = None,
+        config: Optional[Dict[str, Any]] = None,
+        model: Optional[str] = None,
     ) -> ContentConverter:
         """
         コンテンツコンバーターを作成する
@@ -53,8 +55,11 @@ class ConverterFactory:
         Args:
             llm_provider: LLMプロバイダー（省略可能）
             config: コンバーター設定
+            model: モデル名
 
         Returns:
             ContentConverter: コンテンツコンバーターのインスタンス
         """
-        return ContentConverter(llm_provider=llm_provider, config=config or {})
+        return ContentConverter(
+            llm_provider=llm_provider, config=config or {}, model=model
+        )

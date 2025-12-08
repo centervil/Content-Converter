@@ -28,6 +28,7 @@ class ContentConverter:
         self,
         llm_provider: LLMProvider,
         config: Optional[Dict[str, Any]] = None,
+        model: Optional[str] = None,
     ):
         """
         初期化メソッド
@@ -38,6 +39,7 @@ class ContentConverter:
         """
         self.llm_provider = llm_provider
         self.config = config or {}
+        self.model = model
 
     def convert(
         self,
@@ -86,7 +88,10 @@ class ContentConverter:
         ).replace(
             "{{template}}", template
         )
-        return self.llm_provider.optimize_content(final_prompt)
+        options = {}
+        if self.model:
+            options["model"] = self.model
+        return self.llm_provider.optimize_content(final_prompt, options=options)
 
     def convert_file(
         self,
