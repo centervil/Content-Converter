@@ -25,7 +25,7 @@ class TestGeminiProvider:
         # Assert
         assert provider.api_key == "test_api_key"
         mock_configure.assert_called_once_with(api_key="test_api_key")
-        mock_gen_model.assert_called_once_with('gemini-2.0-flash-001')
+        mock_gen_model.assert_called_once_with('gemini-2.5-flash')
 
     @patch('google.generativeai.configure')
     @patch('google.generativeai.GenerativeModel')

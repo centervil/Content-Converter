@@ -23,14 +23,14 @@ class GeminiProvider(LLMProvider):
 
         Args:
             api_key: Gemini APIキー。指定がない場合は環境変数GOOGLE_API_KEYから取得
-            model: 使用するモデル名（デフォルト: gemini-2.0-flash-001）
+            model: 使用するモデル名（デフォルト: gemini-2.5-flash）
         """
         self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
         if not self.api_key:
             raise ValueError("Gemini APIキーが設定されていません。環境変数 GOOGLE_API_KEY を設定するか、--api-key 引数で指定してください。詳細は [Gemini API ドキュメント](https://ai.google.dev/docs/api_key) を参照してください。")
 
         genai.configure(api_key=self.api_key)
-        self.model_name = model or 'gemini-2.0-flash-001'
+        self.model_name = model or 'gemini-2.5-flash'
         self.model = genai.GenerativeModel(self.model_name)
         self.safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,

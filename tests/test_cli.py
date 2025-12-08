@@ -156,7 +156,7 @@ class TestCLI:
         mock_args.output = None
         mock_args.use_llm = True
         mock_args.llm_provider = "gemini"
-        mock_args.model = "gemini-2.0-flash-001"
+        mock_args.model = "gemini-2.5-flash"
         mock_args.prompt_file = "test_prompt.txt"
         mock_args.template = "test_template.txt"
         mock_args.generate_summary = True
@@ -178,11 +178,11 @@ class TestCLI:
             "llm_provider": "gemini",
             "generate_summary": True,
             "summary_length": 150,
-            "model": "gemini-2.0-flash-001",
+            "model": "gemini-2.5-flash",
             "prompt_file": "test_prompt.txt",
             "template_file": "test_template.txt",
             "llm_options": {
-                "model": "gemini-2.0-flash-001"
+                "model": "gemini-2.5-flash"
             }
         }
         mock_create_converter.assert_called_once_with(
