@@ -33,7 +33,7 @@ def test_basic_conversion_flow():
             "--template", template_path,
             "--prompt-file", prompt_path,
             "--output", output_path,
-            "--model", "gemini-2.0-flash-001"
+            "--model", "gemini-2.5-flash"
         ]
         env = os.environ.copy()
         env["MOCK_LLM_PROVIDER"] = "1"

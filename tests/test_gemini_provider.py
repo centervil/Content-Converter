@@ -39,9 +39,9 @@ class TestGeminiProvider:
     def test_init_with_model(self, mock_genai):
         """モデル指定のテスト"""
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "test_key"}):
-            provider = GeminiProvider(model="gemini-2.0-flash-001")
-            assert provider.model_name == "gemini-2.0-flash-001"
-            mock_genai.GenerativeModel.assert_called_once_with("gemini-2.0-flash-001")
+            provider = GeminiProvider(model="gemini-2.5-flash")
+            assert provider.model_name == "gemini-2.5-flash"
+            mock_genai.GenerativeModel.assert_called_once_with("gemini-2.5-flash")
 
     def test_init_with_api_key(self, mock_genai):
         """APIキーを直接指定するテスト"""
