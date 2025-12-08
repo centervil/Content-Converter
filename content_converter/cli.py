@@ -160,7 +160,9 @@ def main() -> int:
                 return 1
 
         # コンバーターを初期化
-        converter = ConverterFactory.create_converter(llm_provider=llm_provider)
+        converter = ConverterFactory.create_converter(
+            llm_provider=llm_provider, model=args.model
+        )
 
         # 変換を実行
         try:
