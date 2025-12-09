@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="content-converter",
-    version="1.2.0",
+    version="1.2.1",
     author="Centervil",
     author_email="info@centervil.example.com",
     description="マークダウンファイルを各種公開プラットフォーム用に変換するツール",
